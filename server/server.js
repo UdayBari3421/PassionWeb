@@ -43,6 +43,13 @@ app.get("/test-db", async (req, res) => {
     res.json({ success: false, error: error.message });
   }
 });
+app.get("/webhook-test", (req, res) => {
+  res.json({
+    message: "Webhook endpoint is accessible",
+    hasWebhookSecret: !!process.env.CLERK_WEBHOOK_SECRET,
+    webhookSecretLength: process.env.CLERK_WEBHOOK_SECRET ? process.env.CLERK_WEBHOOK_SECRET.length : 0
+  });
+});
 app.use("/api/educator", educatorRouter);
 app.use("/api/course", courseRouter);
 app.use("/api/user", userRouter);
