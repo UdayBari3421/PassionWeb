@@ -26,7 +26,7 @@ app.use(clerkMiddleware());
 app.get("/", (req, res) => res.send("API is Working"));
 app.get("/test-db", async (req, res) => {
   try {
-    const userCount = await User.count();
+    const userCount = await User.countDocuments();
     res.json({ 
       success: true, 
       message: "DB connection working",
