@@ -11,7 +11,7 @@ export const clerkWebhooks = async (req, res) => {
     console.log("Headers:", JSON.stringify(req.headers, null, 2));
     console.log("Body type:", typeof req.body);
     console.log("Body length:", req.body ? req.body.length : 0);
-    
+
     // Get the headers
     const svix_id = req.headers["svix-id"];
     const svix_timestamp = req.headers["svix-timestamp"];
@@ -28,10 +28,13 @@ export const clerkWebhooks = async (req, res) => {
     // Get the body as a string
     const body = req.body;
     const payload = body.toString();
-    
+
     console.log("Payload length:", payload.length);
     console.log("Webhook secret available:", !!process.env.CLERK_WEBHOOK_SECRET);
-    console.log("Webhook secret length:", process.env.CLERK_WEBHOOK_SECRET ? process.env.CLERK_WEBHOOK_SECRET.length : 0);
+    console.log(
+      "Webhook secret length:",
+      process.env.CLERK_WEBHOOK_SECRET ? process.env.CLERK_WEBHOOK_SECRET.length : 0
+    );
 
     const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
 
@@ -48,7 +51,9 @@ export const clerkWebhooks = async (req, res) => {
     } catch (err) {
       console.log("Webhook signature verification failed:", err.message);
       console.log("Error details:", err);
-      return res.status(400).json({ error: "Webhook signature verification failed", details: err.message });
+      return res
+        .status(400)
+        .json({ error: "Webhook signature verification failed", details: err.message });
     }
 
     // Do something with the payload
