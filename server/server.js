@@ -77,6 +77,28 @@ app.post("/clerk-debug", express.raw({ type: "application/json" }), (req, res) =
   }
 });
 
+// Test endpoint to create user without webhook signature verification
+app.post("/test-user-creation", express.json(), async (req, res) => {
+  try {
+    const { id, email, firstName, lastName, imageUrl } = req.body;
+    
+    const userData = {
+      _id: id || `test_${Date.now()}`,
+      email: email || "test@example.com",
+      name: `${firstName || "Test"} ${lastName || "User"}`,
+      imageUrl: imageUrl || "https://example.com/default.jpg",
+    };
+    
+    const newUser = await User.create(userData);
+    console.log("Test user created:", newUser._id);
+    
+    res.json({ success: true, user: newUser });
+  } catch (error) {
+    console.error("Test user creation error:", error);
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
 app.use("/api/educator", educatorRouter);
 app.use("/api/course", courseRouter);
 app.use("/api/user", userRouter);
