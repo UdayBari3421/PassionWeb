@@ -47,9 +47,36 @@ app.get("/webhook-test", (req, res) => {
   res.json({
     message: "Webhook endpoint is accessible",
     hasWebhookSecret: !!process.env.CLERK_WEBHOOK_SECRET,
-    webhookSecretLength: process.env.CLERK_WEBHOOK_SECRET ? process.env.CLERK_WEBHOOK_SECRET.length : 0
+    webhookSecretLength: process.env.CLERK_WEBHOOK_SECRET
+      ? process.env.CLERK_WEBHOOK_SECRET.length
+      : 0,
   });
 });
+
+// Debug endpoint for webhook
+app.post("/clerk-debug", express.raw({ type: "application/json" }), (req, res) => {
+  try {
+    console.log("=== WEBHOOK DEBUG ===");
+    console.log("Headers:", req.headers);
+    console.log("Body type:", typeof req.body);
+    console.log("Body length:", req.body ? req.body.length : 0);
+    console.log("Has webhook secret:", !!process.env.CLERK_WEBHOOK_SECRET);
+    console.log("Webhook secret length:", process.env.CLERK_WEBHOOK_SECRET ? process.env.CLERK_WEBHOOK_SECRET.length : 0);
+    
+    res.json({ 
+      success: true, 
+      message: "Debug info logged",
+      headers: req.headers,
+      bodyType: typeof req.body,
+      bodyLength: req.body ? req.body.length : 0,
+      hasWebhookSecret: !!process.env.CLERK_WEBHOOK_SECRET
+    });
+  } catch (error) {
+    console.error("Debug endpoint error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.use("/api/educator", educatorRouter);
 app.use("/api/course", courseRouter);
 app.use("/api/user", userRouter);
