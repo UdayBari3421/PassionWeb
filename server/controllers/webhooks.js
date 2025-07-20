@@ -9,47 +9,60 @@ export const clerkWebhooks = async (req, res) => {
   try {
     const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
 
-    await whook.verify(JSON.stringify(req.body), {
+    // Convert buffer to string if needed
+    const payload = typeof req.body === 'string' ? req.body : req.body.toString();
+
+    await whook.verify(payload, {
       "svix-id": req.headers["svix-id"],
       "svix-timestamp": req.headers["svix-timestamp"],
       "svix-signature": req.headers["svix-signature"],
     });
 
-    const { data, type } = req.body;
+    const { data, type } = JSON.parse(payload);
+    console.log("Webhook received:", type);
 
     switch (type) {
       case "user.created": {
-        console.log("Uday: ", type, " ", data);
+        console.log("Creating user:", data.id);
         const userData = {
           _id: data.id,
           email: data.email_addresses[0].email_address,
           name: data.first_name + " " + data.last_name,
           imageUrl: data.image_url,
         };
-        await User.create(userData);
-        res.json({});
+        const newUser = await User.create(userData);
+        console.log("User created successfully:", newUser._id);
+        res.json({ success: true });
         break;
       }
       case "user.updated": {
+        console.log("Updating user:", data.id);
         const userData = {
           email: data.email_addresses[0].email_address,
           name: data.first_name + " " + data.last_name,
           imageUrl: data.image_url,
         };
 
-        await User.findByIdAndUpdate(data.id, userData);
-        res.json({});
+        const updatedUser = await User.findByIdAndUpdate(data.id, userData);
+        console.log("User updated successfully:", data.id);
+        res.json({ success: true });
         break;
       }
       case "user.deleted": {
+        console.log("Deleting user:", data.id);
         await User.findByIdAndDelete(data.id);
-        res.json({});
+        console.log("User deleted successfully:", data.id);
+        res.json({ success: true });
+        break;
       }
       default:
+        console.log("Unhandled webhook type:", type);
+        res.json({ success: true });
         break;
     }
   } catch (error) {
-    res.json({ success: false, message: error.message });
+    console.error("Webhook error:", error.message);
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 

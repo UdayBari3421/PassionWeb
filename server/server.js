@@ -8,6 +8,7 @@ import { clerkMiddleware } from "@clerk/express";
 import { connectCloudinary } from "./configs/cloudinary.js";
 import courseRouter from "./routes/courseRoute.js";
 import userRouter from "./routes/userRoutes.js";
+import User from "./models/User.model.js";
 
 // application initialization
 const app = express();
@@ -23,7 +24,20 @@ app.use(clerkMiddleware());
 
 // routes
 app.get("/", (req, res) => res.send("API is Working"));
-app.post("/clerk", clerkWebhooks);
+app.get("/test-db", async (req, res) => {
+  try {
+    const userCount = await User.count();
+    res.json({ 
+      success: true, 
+      message: "DB connection working",
+      userCount,
+      hasWebhookSecret: !!process.env.CLERK_WEBHOOK_SECRET 
+    });
+  } catch (error) {
+    res.json({ success: false, error: error.message });
+  }
+});
+app.post("/clerk", express.raw({ type: "application/json" }), clerkWebhooks);
 app.use("/api/educator", educatorRouter);
 app.use("/api/course", courseRouter);
 app.use("/api/user", userRouter);
