@@ -31,7 +31,7 @@ export const clerkWebhooks = async (req, res) => {
       }
       case "user.updated": {
         const userData = {
-          email: data.email_address[0].email_address,
+          email: data.email_addresses[0].email_address,
           name: data.first_name + " " + data.last_name,
           imageUrl: data.image_url,
         };
@@ -43,6 +43,7 @@ export const clerkWebhooks = async (req, res) => {
       case "user.deleted": {
         await User.findByIdAndDelete(data.id);
         res.json({});
+        break;
       }
       default:
         break;
@@ -64,6 +65,8 @@ export const stripeWebHooks = async (request, response) => {
   } catch (err) {
     response.status(400).send(`Webhook Error: ${err.message}`);
   }
+
+  console.log(event.type);
 
   // Handle the event
   switch (event.type) {
@@ -109,6 +112,7 @@ export const stripeWebHooks = async (request, response) => {
     }
     default:
       console.log(`Unhandled event type ${event.type}`);
+      break;
   }
 
   response.json({ received: true });
