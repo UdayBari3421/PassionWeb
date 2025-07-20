@@ -19,29 +19,33 @@ await connectCloudinary();
 
 // Middleware
 app.use(cors());
-app.use(express.json());
 app.use(clerkMiddleware());
+
+// Webhook routes (must be before express.json() middleware)
+app.post("/clerk", express.raw({ type: "application/json" }), clerkWebhooks);
+app.post("/stripe", express.raw({ type: "application/json" }), stripeWebHooks);
+
+// JSON parsing middleware (after webhook routes)
+app.use(express.json());
 
 // routes
 app.get("/", (req, res) => res.send("API is Working"));
 app.get("/test-db", async (req, res) => {
   try {
     const userCount = await User.countDocuments();
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: "DB connection working",
       userCount,
-      hasWebhookSecret: !!process.env.CLERK_WEBHOOK_SECRET 
+      hasWebhookSecret: !!process.env.CLERK_WEBHOOK_SECRET,
     });
   } catch (error) {
     res.json({ success: false, error: error.message });
   }
 });
-app.post("/clerk", express.raw({ type: "application/json" }), clerkWebhooks);
 app.use("/api/educator", educatorRouter);
 app.use("/api/course", courseRouter);
 app.use("/api/user", userRouter);
-app.post("/stripe", express.raw({ type: "application/json" }), stripeWebHooks);
 
 // PORT
 const PORT = process.env.PORT || 8000;
