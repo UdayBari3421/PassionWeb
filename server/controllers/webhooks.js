@@ -19,6 +19,7 @@ export const clerkWebhooks = async (req, res) => {
 
     switch (type) {
       case "user.created": {
+        console.log(data);
         const userData = {
           _id: data.id,
           email: data.email_addresses[0].email_address,
@@ -66,8 +67,6 @@ export const stripeWebHooks = async (request, response) => {
     response.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  console.log(event.type);
-
   // Handle the event
   switch (event.type) {
     case "payment_intent.succeeded": {
@@ -112,7 +111,6 @@ export const stripeWebHooks = async (request, response) => {
     }
     default:
       console.log(`Unhandled event type ${event.type}`);
-      break;
   }
 
   response.json({ received: true });
